@@ -8,7 +8,7 @@ img = cv2.imread(path)
 img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
 #reducing size of the image
-img = cv2.resize(img, None, fx=0.5, fy=0.5)         #tesseract works better if the text is smaller
+#img = cv2.resize(img, None, fx=0.5, fy=0.5)         #tesseract works better if the text is smaller
 
 
 #Gaussian Blur
@@ -26,11 +26,22 @@ f_img = cv2.filter2D(img,-1,gaussian_kernel)
 
 #adaptive threshold
 
-adaptive_threshold = cv2.adaptiveThreshold(f_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 55, 11)
-text = pytesseract.image_to_string(adaptive_threshold)
+adaptive_threshold = cv2.adaptiveThreshold(f_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 45, 11)
 
+coords = np.column_stack(np.where(adaptive_threshold < 255))
+angle = cv2.minAreaRect(coords)[-1]
+if angle < -45:
+	angle = -(90 + angle)
+else:
+	angle = -angle
+(h, w) = adaptive_threshold.shape[:2]
+center = (w // 2, h // 2)
+M = cv2.getRotationMatrix2D(center, angle, 1.0)
+rotated = cv2.warpAffine(adaptive_threshold, M, (w, h),flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+
+text = pytesseract.image_to_string(rotated)
 
 print(text)
-cv2.imshow("Result", adaptive_threshold)
+cv2.imshow("Result", rotated)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
