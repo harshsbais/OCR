@@ -1,3 +1,6 @@
 # OCR
 Baisc OCR
-Currently only works on non tilted/ homogenous background
+Currently only works on homogenous background
+UPDATE 1: Works on tilted text.
+
+Readme.md update soon
